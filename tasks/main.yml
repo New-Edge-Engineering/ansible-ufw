@@ -1,0 +1,50 @@
+---
+# Ubuntu step 1 hardening from http://www.thefanclub.co.za/how-to/how-secure-ubuntu-1204-lts-server-part-1-basics
+- name: ensure ufw is at the latest version
+  apt: pkg=ufw state=latest update_cache=yes
+  notify:
+    - restart ufw
+  tags:
+    - ufw
+    - packages
+
+- name: set ufw to deny anything through
+  shell: "ufw default deny"
+  notify:
+    - restart ufw
+  tags:
+    - ufw
+    - configuration
+
+# allow pings from given networks
+- name: set ufw to allow anything from internal network
+  shell: "ufw allow from {{ item }}/24"
+  with_items: ufw_networks
+  register: ufw_networks_result
+  changed_when: "ufw_networks_result.stdout == 'Rules updated'"
+  notify:
+    - restart ufw
+  tags:
+    - ufw
+    - configuration
+
+- name: set ufw ingress rules
+  shell: "ufw allow {{ item.port }}/{{ item.protocol }}"
+  with_items: ufw_ingresses
+  register: ufw_ingresses_result
+  changed_when: "ufw_ingresses_result.stdout == 'Rules updated\nRules updated (v6)'"
+  notify:
+    - restart ufw
+  tags:
+    - ufw
+    - configuration
+
+# Ignore Directed pings
+- name: allow pings
+  sysctl:
+    name=net.ipv4.icmp_echo_ignore_all
+    state=present
+    value=0
+  tags:
+    - ufw
+    - configuration
