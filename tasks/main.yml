@@ -48,3 +48,10 @@
   tags:
     - ufw
     - configuration
+
+# enable the firewall to protect the server
+- name: enable ufw
+  shell: "ufw --force enable"
+  tags:
+    - ufw
+    - packages
