@@ -2,14 +2,32 @@
 # Ubuntu step 1 hardening from http://www.thefanclub.co.za/how-to/how-secure-ubuntu-1204-lts-server-part-1-basics
 - name: ensure ufw is at the latest version
   apt: pkg=ufw state=latest update_cache=yes
+  sudo: yes
   notify:
     - restart ufw
   tags:
     - ufw
     - packages
 
+- name: UFW | check status
+  command: ufw status
+  sudo: yes
+  register: ufw_status
+  tags:
+    - ufw
+
+- debug: var=ufw_status.stdout_lines[0]
+
+- name: disable ufw
+  shell: "ufw disable"
+  sudo: yes
+  when: '"inactive" not in ufw_status.stdout_lines[0]'
+  tags:
+    - ufw
+
 - name: set ufw to deny anything through
   shell: "ufw default deny"
+  sudo: yes
   notify:
     - restart ufw
   tags:
@@ -20,6 +38,7 @@
 - name: set ufw to allow anything from internal network
   shell: "ufw allow from {{ item }}/24"
   with_items: ufw_networks
+  sudo: yes
   register: ufw_networks_result
   changed_when: "ufw_networks_result.stdout == 'Rules updated'"
   notify:
@@ -32,6 +51,7 @@
   shell: "ufw allow {{ item.port }}/{{ item.protocol }}"
   with_items: ufw_ingresses
   register: ufw_ingresses_result
+  sudo: yes
   changed_when: "ufw_ingresses_result.stdout == 'Rules updated\nRules updated (v6)'"
   notify:
     - restart ufw
@@ -45,13 +65,24 @@
     name=net.ipv4.icmp_echo_ignore_all
     state=present
     value=0
+  sudo: yes
   tags:
     - ufw
     - configuration
 
+- name: UFW | check status
+  command: ufw status
+  sudo: yes
+  register: ufw_status
+  tags:
+    - ufw
+
 # enable the firewall to protect the server
 - name: enable ufw
   shell: "ufw --force enable"
+  when: '"inactive" in ufw_status.stdout_lines[0]'
+  sudo: yes
+  ignore_errors: yes
   tags:
     - ufw
     - packages
