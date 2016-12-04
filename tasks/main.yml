@@ -32,8 +32,6 @@
   shell: "ufw default deny"
   become: yes
   when: ansible_distribution_version | version_compare('14.04', '<')
-  notify:
-    - restart ufw
   tags:
     - ufw
     - configuration
@@ -42,8 +40,6 @@
   shell: "ufw default deny incoming"
   become: yes
   when: ansible_distribution_version | version_compare('14.04', '>=')
-  notify:
-    - restart ufw
   tags:
     - ufw
     - configuration
@@ -52,8 +48,6 @@
   shell: "ufw default allow outgoing"
   become: yes
   when: ansible_distribution_version | version_compare('14.04', '>=')
-  notify:
-    - restart ufw
   tags:
     - ufw
     - configuration
@@ -65,8 +59,6 @@
   become: yes
   register: ufw_networks_result
   changed_when: "ufw_networks_result.stdout == 'Rules updated'"
-  notify:
-    - restart ufw
   tags:
     - ufw
     - configuration
@@ -77,8 +69,6 @@
   register: ufw_ingresses_result
   become: yes
   changed_when: "ufw_ingresses_result.stdout == 'Rules updated\nRules updated (v6)'"
-  notify:
-    - restart ufw
   tags:
     - ufw
     - configuration
@@ -86,9 +76,9 @@
 # Ignore Directed pings
 - name: allow pings
   sysctl:
-    name=net.ipv4.icmp_echo_ignore_all
-    state=present
-    value=0
+    name: net.ipv4.icmp_echo_ignore_all
+    state: present
+    value: 0
   become: yes
   tags:
     - ufw
