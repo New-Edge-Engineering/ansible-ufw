@@ -4,4 +4,3 @@
     name: ufw
     state: restarted
     enabled: true
-  become: yes

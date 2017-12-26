@@ -55,7 +55,7 @@
 # allow pings from given networks
 - name: set ufw to allow anything from internal network
   shell: "ufw allow from {{ item }}/24"
-  with_items: ufw_networks
+  with_items: "{{ ufw_networks|default([]) }}"
   become: yes
   register: ufw_networks_result
   changed_when: "ufw_networks_result.stdout == 'Rules updated'"
@@ -65,7 +65,7 @@
 
 - name: set ufw ingress rules
   shell: "ufw allow {{ item.port }}/{{ item.protocol }}"
-  with_items: ufw_ingresses
+  with_items: "{{ ufw_ingresses|default([]) }}"
   register: ufw_ingresses_result
   become: yes
   changed_when: "ufw_ingresses_result.stdout == 'Rules updated\nRules updated (v6)'"
