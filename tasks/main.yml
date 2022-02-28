@@ -12,14 +12,16 @@
     - ufw
     - packages
 
-- name: UFW | check status
+- name: check status
   command: ufw status
   become: yes
   register: ufw_status
   tags:
     - ufw
 
-- debug: var=ufw_status.stdout_lines[0]
+- debug:
+    var: ansible_distribution_version
+
 
 - name: disable ufw
   shell: "ufw disable"
@@ -31,7 +33,7 @@
 - name: set ufw to deny anything through
   shell: "ufw default deny"
   become: yes
-  when: ansible_distribution_version | version_compare('14.04', '<')
+  when: ansible_distribution_version is version_compare('14.04', '<')
   tags:
     - ufw
     - configuration
@@ -39,7 +41,7 @@
 - name: set ufw to deny anything incoming
   shell: "ufw default deny incoming"
   become: yes
-  when: ansible_distribution_version | version_compare('14.04', '>=')
+  when: ansible_distribution_version is version_compare('14.04', '>=')
   tags:
     - ufw
     - configuration
@@ -47,7 +49,7 @@
 - name: set ufw to allow anything outgoing
   shell: "ufw default allow outgoing"
   become: yes
-  when: ansible_distribution_version | version_compare('14.04', '>=')
+  when: ansible_distribution_version is version_compare('14.04', '>=')
   tags:
     - ufw
     - configuration
@@ -84,7 +86,7 @@
     - ufw
     - configuration
 
-- name: UFW | check status
+- name: check status
   command: ufw status
   become: yes
   register: ufw_status

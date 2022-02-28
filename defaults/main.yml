@@ -1,2 +1,2 @@
 ---
-ufw_networks: 127.0.0.1
+ufw_networks: [ 127.0.0.1 ]
